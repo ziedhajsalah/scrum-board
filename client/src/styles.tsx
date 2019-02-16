@@ -7,5 +7,9 @@ export const styles: { [name: string]: CSSProperties } = {
   headerSections: {
     display: 'flex',
     alignItems: 'center'
+  },
+  storySection: {
+    backgroundColor: 'lightgrey',
+    border: '1px solid lightblue'
   }
 };

@@ -83,5 +83,5 @@ const initialStories: Story[] = [
 
 export default function App() {
   const [stories, setStories] = React.useState(initialStories);
-  return <ScrumBoard stories={stories} />;
+  return <ScrumBoard stories={stories} setStories={setStories} />;
 }
