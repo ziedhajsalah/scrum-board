@@ -26,14 +26,14 @@ export function SubTaskFrame({
             .filter((subTask) => subTask.status === status)
             .map((subTask, index) => (
               <Draggable
-                key={subTask.id}
-                draggableId={subTask.id}
+                key={subTask._id}
+                draggableId={subTask._id!}
                 index={index}
               >
                 {(provided, snapshot) => (
                   <div
                     className="card"
-                    key={subTask.id}
+                    key={subTask._id}
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}

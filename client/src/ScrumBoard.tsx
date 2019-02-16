@@ -55,7 +55,7 @@ export function ScrumBoard({
         </div>
       </div>
       {stories.map((story, storyIndex) => (
-        <div className="row" key={story.id}>
+        <div className="row" key={story._id}>
           <div className="col-sm-3" style={styles.storySection}>
             <div className="row">{story.name}</div>
             <AddSubtask

@@ -1,18 +1,18 @@
 import React from 'react';
 
 import { ScrumBoard } from './ScrumBoard';
-import { getStories, updateStories } from './api';
+import { getStories, updateStory, createStory } from './api';
 
 export type Status = 'notStarted' | 'inProgress' | 'done';
 
 export type SubTask = {
-  id: string;
+  _id?: string;
   name: string;
   status: Status;
 };
 
 export type Story = {
-  id: string;
+  _id?: string;
   name: string;
   subTasks: SubTask[];
 };
@@ -25,78 +25,14 @@ export const setStories = 'setStories';
 function storiesReducer(state: Story[], action: any): Story[] {
   switch (action.type) {
     case addStory:
-      return [
-        ...state,
-        {
-          name: action.name as string,
-          id: Date.now().toString(),
-          subTasks: []
-        }
-      ];
+      return [...state, action.newStory];
     case addSubtask:
+    case moveSubtask:
       return [
         ...state.slice(0, action.storyIndex),
-        {
-          ...action.story,
-          subTasks: [
-            ...action.story.subTasks,
-            {
-              name: action.SubtaskName,
-              id: Date.now().toString(),
-              status: 'notStarted'
-            }
-          ]
-        },
+        action.updatedStory,
         ...state.slice(action.storyIndex + 1)
       ];
-    case moveSubtask: {
-      const { source, destination, draggableId, story, storyIndex } = action;
-      if (!destination) {
-        return state;
-      }
-
-      const fromInProgressToNotStarted =
-        source.droppableId === 'inProgress' &&
-        destination.droppableId === 'notStarted';
-
-      const fromDoneToInProgress =
-        source.droppableId === 'done' &&
-        destination.droppableId === 'inProgress';
-
-      const fromDoneToNotStarted =
-        source.droppableId === 'done' &&
-        destination.droppableId === 'notStarted';
-
-      if (
-        fromDoneToInProgress ||
-        fromInProgressToNotStarted ||
-        fromDoneToNotStarted
-      ) {
-        return state;
-      }
-
-      const updatedStory = { ...story };
-      const draggedSubTaskIdx = updatedStory.subTasks.findIndex(
-        (st: SubTask) => st.id === draggableId
-      );
-      const draggedSubTask = updatedStory.subTasks[draggedSubTaskIdx];
-
-      return [
-        ...state.slice(0, storyIndex),
-        {
-          ...updatedStory,
-          subTasks: [
-            ...updatedStory.subTasks.slice(0, draggedSubTaskIdx),
-            {
-              ...draggedSubTask,
-              status: destination.droppableId as Status
-            },
-            ...updatedStory.subTasks.slice(draggedSubTaskIdx + 1)
-          ]
-        },
-        ...state.slice(storyIndex + 1)
-      ];
-    }
     case setStories:
       return action.stories;
     default:
@@ -115,10 +51,6 @@ export default function App() {
     });
   }, []);
 
-  React.useEffect(() => {
-    updateStories(stories);
-  }, [stories]);
-
   return (
     <ScrumBoard
       stories={stories}
@@ -129,25 +61,76 @@ export default function App() {
         story: any,
         storyIndex: any
       ) => {
-        dispatch({
-          type: moveSubtask,
-          source,
-          destination,
-          draggableId,
-          story,
-          storyIndex
+        if (!destination) {
+          return;
+        }
+
+        const fromInProgressToNotStarted =
+          source.droppableId === 'inProgress' &&
+          destination.droppableId === 'notStarted';
+
+        const fromDoneToInProgress =
+          source.droppableId === 'done' &&
+          destination.droppableId === 'inProgress';
+
+        const fromDoneToNotStarted =
+          source.droppableId === 'done' &&
+          destination.droppableId === 'notStarted';
+
+        if (
+          fromDoneToInProgress ||
+          fromInProgressToNotStarted ||
+          fromDoneToNotStarted
+        ) {
+          return;
+        }
+
+        const draggedSubTaskIdx = story.subTasks.findIndex(
+          (st: SubTask) => st._id === draggableId
+        );
+        const draggedSubTask = story.subTasks[draggedSubTaskIdx];
+        const updatedStory = {
+          ...story,
+          subTasks: [
+            ...story.subTasks.slice(0, draggedSubTaskIdx),
+            {
+              ...draggedSubTask,
+              status: destination.droppableId as Status
+            },
+            ...story.subTasks.slice(draggedSubTaskIdx + 1)
+          ]
+        };
+
+        updateStory(updatedStory).then((data) => {
+          dispatch({
+            type: moveSubtask,
+            updatedStory: data,
+            storyIndex
+          });
         });
       }}
       addSubTask={(story: Story, SubtaskName: string, storyIndex: number) => {
-        dispatch({
-          type: addSubtask,
-          story,
-          SubtaskName,
-          storyIndex
+        updateStory({
+          ...story,
+          subTasks: [
+            ...story.subTasks,
+            {
+              name: SubtaskName,
+              status: 'notStarted'
+            }
+          ]
+        }).then((updatedStory) => {
+          dispatch({
+            type: addSubtask,
+            updatedStory,
+            storyIndex
+          });
         });
       }}
       addStory={(storyName: string) => {
-        dispatch({ type: addStory, name: storyName });
+        createStory({ name: storyName, subTasks: [] }).then((newStory) => {
+          dispatch({ type: addStory, newStory });
+        });
       }}
     />
   );
