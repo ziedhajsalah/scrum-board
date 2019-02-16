@@ -1,14 +1,8 @@
 import React from 'react';
 
-import { Story, addStory } from './App';
+export type addStoryFn = (storyName: string) => void;
 
-export function AddStory({
-  stories,
-  dispatch
-}: {
-  stories: Story[];
-  dispatch: React.Dispatch<any>;
-}) {
+export function AddStory({ addStory }: { addStory: addStoryFn }) {
   const [storyName, setStoryName] = React.useState('');
   return (
     <div className="row">
@@ -23,7 +17,7 @@ export function AddStory({
           if (storyName === '') {
             return;
           }
-          dispatch({ type: addStory, name: storyName });
+          addStory(storyName);
           setStoryName('');
         }}
       >

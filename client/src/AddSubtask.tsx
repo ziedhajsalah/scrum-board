@@ -1,16 +1,20 @@
 import React from 'react';
-import { Story, addSubtask } from './App';
+import { Story } from './App';
+
+export type addSubTaskFn = (
+  story: Story,
+  SubtaskName: string,
+  storyIndex: number
+) => void;
 
 export function AddSubtask({
-  stories,
   story,
   storyIndex,
-  dispatch
+  addSubTask
 }: {
-  stories: Story[];
   story: Story;
   storyIndex: number;
-  dispatch: React.Dispatch<any>;
+  addSubTask: addSubTaskFn;
 }) {
   const [SubtaskName, setSubtaskName] = React.useState('');
   return (
@@ -26,12 +30,7 @@ export function AddSubtask({
           if (SubtaskName === '') {
             return;
           }
-          dispatch({
-            type: addSubtask,
-            story,
-            SubtaskName,
-            storyIndex
-          });
+          addSubTask(story, SubtaskName, storyIndex);
           setSubtaskName('');
         }}
       >

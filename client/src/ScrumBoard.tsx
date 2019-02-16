@@ -1,18 +1,30 @@
 import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 
-import { Story, Status, moveSubtask } from './App';
+import { Story } from './App';
 import { SubTaskFrame } from './SubTaskFrame';
-import { AddStory } from './AddStory';
-import { AddSubtask } from './AddSubtask';
+import { AddStory, addStoryFn } from './AddStory';
+import { AddSubtask, addSubTaskFn } from './AddSubtask';
 import { styles } from './styles';
+
+type moveSubTaskFn = (
+  source: any,
+  destination: any,
+  draggableId: any,
+  story: any,
+  storyIndex: any
+) => void;
 
 export function ScrumBoard({
   stories,
-  dispatch
+  moveSubTask,
+  addSubTask,
+  addStory
 }: {
   stories: Story[];
-  dispatch: React.Dispatch<any>;
+  moveSubTask: moveSubTaskFn;
+  addSubTask: addSubTaskFn;
+  addStory: addStoryFn;
 }) {
   return (
     <div className="container">
@@ -47,23 +59,15 @@ export function ScrumBoard({
           <div className="col-sm-3" style={styles.storySection}>
             <div className="row">{story.name}</div>
             <AddSubtask
-              stories={stories}
               story={story}
               storyIndex={storyIndex}
-              dispatch={dispatch}
+              addSubTask={addSubTask}
             />
           </div>
           <DragDropContext
             onDragEnd={(result) => {
               const { source, destination, draggableId } = result;
-              dispatch({
-                type: moveSubtask,
-                source,
-                destination,
-                draggableId,
-                story,
-                storyIndex
-              });
+              moveSubTask(source, destination, draggableId, story, storyIndex);
             }}
           >
             <SubTaskFrame subTasks={story.subTasks} status="notStarted" />
@@ -72,7 +76,7 @@ export function ScrumBoard({
           </DragDropContext>
         </div>
       ))}
-      <AddStory stories={stories} dispatch={dispatch} />
+      <AddStory addStory={addStory} />
     </div>
   );
 }
