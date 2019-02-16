@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { Story } from './App';
+import { Story, addStory } from './App';
 
 export function AddStory({
   stories,
-  setStories
+  dispatch
 }: {
   stories: Story[];
-  setStories: React.Dispatch<React.SetStateAction<Story[]>>;
+  dispatch: React.Dispatch<any>;
 }) {
   const [storyName, setStoryName] = React.useState('');
   return (
@@ -23,14 +23,7 @@ export function AddStory({
           if (storyName === '') {
             return;
           }
-          setStories([
-            ...stories,
-            {
-              name: storyName,
-              id: Date.now().toString(),
-              subTasks: []
-            }
-          ]);
+          dispatch({ type: addStory, name: storyName });
           setStoryName('');
         }}
       >

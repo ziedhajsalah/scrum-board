@@ -1,7 +1,7 @@
 import React from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
 
-import { Story, Status } from './App';
+import { Story, Status, moveSubtask } from './App';
 import { SubTaskFrame } from './SubTaskFrame';
 import { AddStory } from './AddStory';
 import { AddSubtask } from './AddSubtask';
@@ -9,10 +9,10 @@ import { styles } from './styles';
 
 export function ScrumBoard({
   stories,
-  setStories
+  dispatch
 }: {
   stories: Story[];
-  setStories: React.Dispatch<React.SetStateAction<Story[]>>;
+  dispatch: React.Dispatch<any>;
 }) {
   return (
     <div className="container">
@@ -50,59 +50,20 @@ export function ScrumBoard({
               stories={stories}
               story={story}
               storyIndex={storyIndex}
-              setStories={setStories}
+              dispatch={dispatch}
             />
           </div>
           <DragDropContext
             onDragEnd={(result) => {
               const { source, destination, draggableId } = result;
-
-              if (!destination) {
-                return;
-              }
-
-              const fromInProgressToNotStarted =
-                source.droppableId === 'inProgress' &&
-                destination.droppableId === 'notStarted';
-
-              const fromDoneToInProgress =
-                source.droppableId === 'done' &&
-                destination.droppableId === 'inProgress';
-
-              const fromDoneToNotStarted =
-                source.droppableId === 'done' &&
-                destination.droppableId === 'notStarted';
-
-              if (
-                fromDoneToInProgress ||
-                fromInProgressToNotStarted ||
-                fromDoneToNotStarted
-              ) {
-                return;
-              }
-
-              const updatedStory = { ...story };
-              const draggedSubTaskIdx = updatedStory.subTasks.findIndex(
-                (st) => st.id === draggableId
-              );
-              const draggedSubTask = updatedStory.subTasks[draggedSubTaskIdx];
-
-              const updatedStories = [
-                ...stories.slice(0, storyIndex),
-                {
-                  ...updatedStory,
-                  subTasks: [
-                    ...updatedStory.subTasks.slice(0, draggedSubTaskIdx),
-                    {
-                      ...draggedSubTask,
-                      status: destination.droppableId as Status
-                    },
-                    ...updatedStory.subTasks.slice(draggedSubTaskIdx + 1)
-                  ]
-                },
-                ...stories.slice(storyIndex + 1)
-              ];
-              setStories(() => updatedStories);
+              dispatch({
+                type: moveSubtask,
+                source,
+                destination,
+                draggableId,
+                story,
+                storyIndex
+              });
             }}
           >
             <SubTaskFrame subTasks={story.subTasks} status="notStarted" />
@@ -111,7 +72,7 @@ export function ScrumBoard({
           </DragDropContext>
         </div>
       ))}
-      <AddStory stories={stories} setStories={setStories} />
+      <AddStory stories={stories} dispatch={dispatch} />
     </div>
   );
 }
