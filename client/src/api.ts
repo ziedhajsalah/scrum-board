@@ -1,14 +1,14 @@
+import * as Axios from 'axios';
 import { Story } from './App';
 
+const baseUrl = 'http://localhost:3030';
+
 export function getStories(): Promise<Story[]> {
-  return new Promise((resolve) => {
-    resolve(JSON.parse(localStorage.getItem('stories') || '[]'));
-  });
+  return Axios.default.get(`${baseUrl}/stories`).then((res) => res.data);
 }
 
 export function updateStories(stories: Story[]): Promise<Story[]> {
-  return new Promise((resolve) => {
-    localStorage.setItem('stories', JSON.stringify(stories));
-    resolve(stories);
-  });
+  return Axios.default
+    .post(`${baseUrl}/stories`, { stories })
+    .then((res) => res.data);
 }
