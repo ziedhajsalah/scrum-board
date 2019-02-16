@@ -3,6 +3,8 @@ import { DragDropContext } from 'react-beautiful-dnd';
 
 import { Story, Status } from './App';
 import { SubTaskFrame } from './SubTaskFrame';
+import { AddStory } from './AddStory';
+import { AddSubtask } from './AddSubtask';
 import { styles } from './styles';
 
 export function ScrumBoard({
@@ -43,7 +45,13 @@ export function ScrumBoard({
       {stories.map((story, storyIndex) => (
         <div className="row" key={story.id}>
           <div className="col-sm-3" style={styles.storySection}>
-            {story.name}
+            <div className="row">{story.name}</div>
+            <AddSubtask
+              stories={stories}
+              story={story}
+              storyIndex={storyIndex}
+              setStories={setStories}
+            />
           </div>
           <DragDropContext
             onDragEnd={(result) => {
@@ -103,6 +111,7 @@ export function ScrumBoard({
           </DragDropContext>
         </div>
       ))}
+      <AddStory stories={stories} setStories={setStories} />
     </div>
   );
 }
